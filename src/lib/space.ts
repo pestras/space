@@ -67,8 +67,11 @@ export class Space {
     // grid
     this.options.showGrid && drawGrid(this.state);
 
-    for (const shape of this.shapes())
+    for (const shape of this.shapes()) {
+      this.state.ctx.save();
       Shape.draw(shape, this.state);
+      this.state.ctx.restore();
+    }
   }
 
   // Mouse event handling
@@ -152,7 +155,7 @@ export class Space {
         const shapes = this.shapes();
 
         for (let i = shapes.length - 1; i >= 0; i--) {
-          hoverOnShape = shapes[i].isPointIn(this.state.mouseViewPos);
+          hoverOnShape = Shape.isPointIn(shapes[i], this.state.mouseViewPos);
 
           if (hoverOnShape) {
             if (hoverOnShape === this.state.dragged)
@@ -308,5 +311,5 @@ export class Space {
 
   // ordering
   // --------------------------------------------------------------------------------------------
-  
+
 }

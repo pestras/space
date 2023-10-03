@@ -4,7 +4,7 @@ import { Shape } from "../shape";
 export const drag = {
   enable(shape: Shape) {
     shape.on('dragstart', state => {
-      shape.locals['mouseDownPosOffset'] = new Point(Math.abs(state.mouseViewPos.x - shape.vPos().x), Math.abs(state.mouseViewPos.y - shape.vPos().y));
+      shape.locals['mouseDownPosOffset'] = new Point((state.mouseViewPos.x - shape.vPos().x), (state.mouseViewPos.y - shape.vPos().y));
     });
 
     shape.on('drag', state => {

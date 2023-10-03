@@ -2,16 +2,13 @@ import { Point } from "../point";
 import { Shape } from "./shape";
 import { Size } from "../size";
 import { State } from "../state";
-import { features } from "./features";
 
 export class Rect extends Shape {
-  private _draggable = false;
-  private _arrowControl = false;
 
   constructor(pos = new Point(), protected _size = new Size(100, 60)) {
     super();
 
-    this.setPos(pos);
+    this.setPos(new Point(pos.x + this._size.w / 2, pos.y + this._size.h / 2));
   }
 
   size() {
@@ -19,11 +16,6 @@ export class Rect extends Shape {
   }
 
   override isPointIn(point: Point): Shape | null {
-    const child = super.isPointIn(point);
-
-    if (child)
-      return child;
-
     return point.x > this.vPos().x
       && point.x < (this.vPos().x + this._size.w)
       && point.y > this.vPos().y
@@ -44,33 +36,5 @@ export class Rect extends Shape {
       state.ctx.strokeStyle = '#336';
       state.ctx.strokeRect(this.vPos().x, this.vPos().y, this._size.w, this._size.h);
     }
-  }
-
-  // dragging
-  // ----------------------------------------------------------------------------------
-  get draggable() {
-    return this._draggable;
-  }
-
-  set draggable(value: boolean) {
-    if (value === this._draggable)
-      return;
-
-    this._draggable = value;
-    this._draggable ? features.drag.enable(this) : features.drag.disable(this);
-  }
-
-  // arrow control
-  // ----------------------------------------------------------------------------------
-  get arrowControl() {
-    return this._arrowControl;
-  }
-
-  set arrowControl(value: boolean) {
-    if (value === this._arrowControl)
-      return;
-
-    this._arrowControl = value;
-    this._arrowControl ? features.arrowControl.enable(this) : features.arrowControl.disable(this);
   }
 }

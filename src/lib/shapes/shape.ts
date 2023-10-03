@@ -2,6 +2,7 @@ import { Listeners } from "../listener";
 import { Point } from "../point";
 import { State } from "../state";
 import { spaceId } from "../util/id";
+import { features } from "./features";
 
 export interface ShapeState {
   acceptChildren?: string[];
@@ -19,6 +20,9 @@ export abstract class Shape {
   readonly state: ShapeState = {};
   readonly style: ShapeStyle = { visible: true };
   readonly locals: Record<string, any> = {};
+
+  private _draggable = false;
+  private _arrowControl = false;
 
 
   // channels
@@ -120,7 +124,7 @@ export abstract class Shape {
 
   // events
   // ---------------------------------------------------------------------------------------
-  private _isPointInChild(point: Point): Shape | null {
+  private _isPointIn(point: Point): Shape | null {
     const children = this.children();
 
     for (let i = children.length - 1; i >= 0; i--) {
@@ -130,14 +134,10 @@ export abstract class Shape {
         return shape;
     }
 
-    return null;
+    return this.isPointIn(point);
   }
 
-  isPointIn(point: Point): Shape | null {
-    const child = this._isPointInChild(point);
-
-    return child ?? null;
-  }
+  abstract isPointIn(point: Point): Shape | null;
 
   on<T extends keyof Listeners>(event: T, cb: Listeners[T]) {
     this.listeners[event] = cb;
@@ -145,6 +145,37 @@ export abstract class Shape {
 
   off(event: keyof Listeners) {
     delete this.listeners[event];
+  }
+
+  // features
+  // --------------------------------------------------------------------------------------
+  
+  // dragging
+  // ----------------------------------------------------------------------------------
+  get draggable() {
+    return this._draggable;
+  }
+
+  set draggable(value: boolean) {
+    if (value === this._draggable)
+      return;
+
+    this._draggable = value;
+    this._draggable ? features.drag.enable(this) : features.drag.disable(this);
+  }
+
+  // arrow control
+  // ----------------------------------------------------------------------------------
+  get arrowControl() {
+    return this._arrowControl;
+  }
+
+  set arrowControl(value: boolean) {
+    if (value === this._arrowControl)
+      return;
+
+    this._arrowControl = value;
+    this._arrowControl ? features.arrowControl.enable(this) : features.arrowControl.disable(this);
   }
 
   // drawing
@@ -165,5 +196,9 @@ export abstract class Shape {
   // -------------------------------------------------------------------------------------
   static draw(shape: Shape, state: State) {
     shape._draw(state);
+  }
+
+  static isPointIn(shape: Shape, point: Point) {
+    return shape._isPointIn(point);
   }
 }
