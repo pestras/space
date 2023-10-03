@@ -1,6 +1,6 @@
 import { drawGrid } from "./grid";
 import { Point } from "./point";
-import { Shape } from "./shape";
+import { Shape } from "./shapes/shape";
 import { Size } from "./size";
 import { State } from "./state";
 import { SpaceTheme, defaultSpaceTheme } from "./theme";
@@ -42,9 +42,9 @@ export class Space {
       altKey: false,
       ctrlKey: false,
       shiftKey: false,
-      draggingShape: null,
-      focusShape: null,
-      mouseInShape: null,
+      dragged: null,
+      selected: null,
+      hovered: null,
       key: null,
       mousePos: new Point(),
       mouseViewPos: new Point(),
@@ -68,7 +68,7 @@ export class Space {
     this.options.showGrid && drawGrid(this.state);
 
     for (const shape of this.shapes())
-      shape.draw(this.state);
+      Shape.draw(shape, this.state);
   }
 
   // Mouse event handling
@@ -88,21 +88,21 @@ export class Space {
       this.setMousePos(e);
 
       // find the shape that is being clicked
-      const mouseInShape = this.state.mouseInShape;
+      const mouseInShape = this.state.hovered;
 
-      if (this.state.focusShape && this.state.focusShape !== mouseInShape)
-        this.state.focusShape?.listeners.blur && this.state.focusShape.listeners.blur(this.state);
+      if (this.state.selected && this.state.selected !== mouseInShape)
+        this.state.selected?.listeners.deselect && this.state.selected.listeners.deselect(this.state);
 
       // when found check if has listener
       if (mouseInShape) {
-        this.state.focusShape = mouseInShape
-        mouseInShape.listeners.focus && mouseInShape.listeners.focus(this.state);
+        this.state.selected = mouseInShape
+        mouseInShape.listeners.select && mouseInShape.listeners.select(this.state);
         mouseInShape.listeners.click && mouseInShape.listeners.click(this.state);
       }
       // otherwise clear focus and dragging shapes from the state  
       else {
-        this.state.focusShape = null;
-        this.state.draggingShape = null;
+        this.state.selected = null;
+        this.state.dragged = null;
       }
 
       this.draw();
@@ -112,22 +112,22 @@ export class Space {
       this.setMousePos(e);
 
       // find shape under moouse position
-      const mouseInShape = this.state.mouseInShape;
+      const mouseInShape = this.state.hovered;
 
-      if (this.state.focusShape && this.state.focusShape !== mouseInShape)
-        this.state.focusShape?.listeners.blur && this.state.focusShape.listeners.blur(this.state);
+      if (this.state.selected && this.state.selected !== mouseInShape)
+        this.state.selected?.listeners.deselect && this.state.selected.listeners.deselect(this.state);
 
       // update state when shape is draggable or focusable
       if (mouseInShape) {
         if (mouseInShape.listeners.dragstart) {
-          this.state.draggingShape = mouseInShape;
+          this.state.dragged = mouseInShape;
           mouseInShape.listeners.dragstart && mouseInShape.listeners.dragstart(this.state);
 
         } else
           mouseInShape.listeners.mousedown && mouseInShape.listeners.mousedown(this.state);
 
-        this.state.focusShape = mouseInShape;
-        mouseInShape.listeners.focus && mouseInShape.listeners.focus(this.state);
+        this.state.selected = mouseInShape;
+        mouseInShape.listeners.select && mouseInShape.listeners.select(this.state);
       }
       // otherwise activate panning action 
       else
@@ -147,7 +147,7 @@ export class Space {
 
       } else {
         let hoverOnShape: Shape | null = null;
-        const draggingShape = this.state.draggingShape;
+        const draggingShape = this.state.dragged;
 
         const shapes = this.shapes();
 
@@ -155,7 +155,7 @@ export class Space {
           hoverOnShape = shapes[i].isPointIn(this.state.mouseViewPos);
 
           if (hoverOnShape) {
-            if (hoverOnShape === this.state.draggingShape)
+            if (hoverOnShape === this.state.dragged)
               continue;
 
             break;
@@ -163,15 +163,17 @@ export class Space {
         }
 
         if (hoverOnShape) {
-          if (this.state.mouseInShape && this.state.mouseInShape !== hoverOnShape)
-            this.state.mouseInShape.listeners.mouseout && this.state.mouseInShape.listeners.mouseout(this.state);
+          if (this.state.hovered && this.state.hovered !== hoverOnShape)
+            this.state.hovered.listeners.mouseout && this.state.hovered.listeners.mouseout(this.state);
 
-          if (this.state.mouseInShape !== hoverOnShape) {
-            this.state.mouseInShape = hoverOnShape;
+          if (this.state.hovered !== hoverOnShape) {
+            this.state.hovered = hoverOnShape;
             hoverOnShape.listeners.mousein && hoverOnShape.listeners.mousein(this.state);
           } else {
             hoverOnShape.listeners.mousemove && hoverOnShape.listeners.mousemove(this.state);
           }
+        } else {
+          this.state.hovered = null;
         }
 
         if (draggingShape) {
@@ -196,8 +198,8 @@ export class Space {
     document.addEventListener("mouseup", e => {
       this.setMousePos(e);
 
-      const draggingShape = this.state.draggingShape;
-      const mouseInShape = this.state.mouseInShape
+      const draggingShape = this.state.dragged;
+      const mouseInShape = this.state.hovered
 
       if (draggingShape) {
         draggingShape.listeners.dragend && draggingShape.listeners.dragend(this.state);
@@ -217,7 +219,7 @@ export class Space {
         mouseInShape.listeners.mouseup(this.state);
 
       this.isPanning = false;
-      this.state.draggingShape = null;
+      this.state.dragged = null;
 
       this.draw();
     });
@@ -247,8 +249,8 @@ export class Space {
       this.state.key = e.key;
 
       // check if current state has focused shape and has listener
-      if (this.state.focusShape && this.state.focusShape.listeners.keydown)
-        this.state.focusShape.listeners.keydown(this.state);
+      if (this.state.selected && this.state.selected.listeners.keydown)
+        this.state.selected.listeners.keydown(this.state);
 
       this.draw();
     });
@@ -260,8 +262,8 @@ export class Space {
       this.state.ctrlKey = false;
 
       // check if current state has focused shape and has listener
-      if (this.state.focusShape && this.state.focusShape.listeners.keyup)
-        this.state.focusShape.listeners.keyup(this.state);
+      if (this.state.selected && this.state.selected.listeners.keyup)
+        this.state.selected.listeners.keyup(this.state);
 
       this.draw();
     });
@@ -273,8 +275,8 @@ export class Space {
       this.state.key = e.key;
 
       // check if current state has focused shape and has listener
-      if (this.state.focusShape && this.state.focusShape.listeners.keypress)
-        this.state.focusShape.listeners.keypress(this.state);
+      if (this.state.selected && this.state.selected.listeners.keypress)
+        this.state.selected.listeners.keypress(this.state);
 
       this.draw();
     });
@@ -303,4 +305,8 @@ export class Space {
   get length() {
     return this._shapes.size;
   }
+
+  // ordering
+  // --------------------------------------------------------------------------------------------
+  
 }

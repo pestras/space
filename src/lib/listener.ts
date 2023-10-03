@@ -1,4 +1,4 @@
-import { Shape } from "./shape";
+import { Shape } from "./shapes/shape";
 import { State } from "./state";
 
 export interface KeyHold {
@@ -18,8 +18,8 @@ export interface Listeners {
   keydown?: (state: State) => boolean | void;
   keypress?: (state: State) => boolean | void;
   keyup?: (state: State) => boolean | void;
-  focus?: (state: State) => boolean | void;
-  blur?: (state: State) => boolean | void;
+  select?: (state: State) => boolean | void;
+  deselect?: (state: State) => boolean | void;
   dragstart?: (state: State) => boolean | void;
   drag?: (state: State) => boolean | void;
   dragend?: (state: State) => boolean | void;
@@ -29,11 +29,11 @@ export interface Listeners {
   dropshapein?: (state: State) => boolean | void;
   // shape context events
   /** attached to a parent */
-  attached?: (parent: Shape) => void;
+  newparent?: (parent: Shape) => void;
   /** deattached from a parent */
-  deattached?: () => void;
+  removeparent?: () => void;
   /** new child added */
-  childAdded?: (child: Shape) => void;
+  newchild?: (child: Shape) => void;
   /** child was removed */
-  childRemoved?: () => void;
+  removechild?: () => void;
 }

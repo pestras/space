@@ -1,5 +1,5 @@
 import { Point } from "./point";
-import { Shape } from "./shape";
+import { Shape } from "./shapes/shape";
 import { Size } from "./size";
 import { SpaceTheme } from "./theme";
 
@@ -31,9 +31,9 @@ export interface State {
   /** Theme style */
   style: SpaceTheme;
   /** shape being dragged */
-  draggingShape: Shape | null;
+  dragged: Shape | null;
   /** current shape in focus  */
-  focusShape: Shape | null;
+  selected: Shape | null;
   /** current hoverd shape  */
-  mouseInShape: Shape | null;
+  hovered: Shape | null;
 }

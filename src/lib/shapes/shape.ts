@@ -1,7 +1,7 @@
-import { Listeners } from "./listener";
-import { Point } from "./point";
-import { State } from "./state";
-import { spaceId } from "./util/id";
+import { Listeners } from "../listener";
+import { Point } from "../point";
+import { State } from "../state";
+import { spaceId } from "../util/id";
 
 export interface ShapeState {
   acceptChildren?: string[];
@@ -17,7 +17,7 @@ export abstract class Shape {
   readonly id = spaceId();
   readonly listeners: Listeners = {};
   readonly state: ShapeState = {};
-  readonly style: ShapeStyle = {};
+  readonly style: ShapeStyle = { visible: true };
   readonly locals: Record<string, any> = {};
 
 
@@ -49,21 +49,21 @@ export abstract class Shape {
   private _children = new Map<string, Shape>();
   private childrenOrder: string[] = [];
 
-  private _onAttach(parent: Shape): void {
+  private _onNewParent(parent: Shape): void {
     if (!this.state.acceptChildren)
       return;
 
     this._parent = parent;
     this._vPos = new Point(parent.vPos().x + this.pos().x, parent.vPos().y + this.pos().y);
 
-    this.listeners.attached && this.listeners.attached(parent);
+    this.listeners.newparent && this.listeners.newparent(parent);
   }
 
-  private _onDeattach(): void {
+  private _onRemoveParent(): void {
     this._parent = null;
     this._vPos = this._pos.clone();
 
-    this.listeners.deattached && this.listeners.deattached();
+    this.listeners.removeparent && this.listeners.removeparent();
   }
 
   addChild(shape: Shape) {
@@ -73,28 +73,27 @@ export abstract class Shape {
     this._children.set(shape.id, shape);
     this.childrenOrder.push(shape.id);
 
-    this.listeners.childAdded && this.listeners.childAdded(shape);
-    shape._onAttach(this);
+    this.listeners.newchild && this.listeners.newchild(shape);
+    shape._onNewParent(this);
 
     return this;
   }
 
   removeChild(shape: Shape) {
+    if (!this._children.has(shape.id))
+      return;
+    
     this._children.delete(shape.id);
     this.childrenOrder = this.childrenOrder.filter(id => id !== shape.id);
 
-    this.listeners.childRemoved && this.listeners.childRemoved();
-    shape._onDeattach();
+    this.listeners.removechild && this.listeners.removechild();
+    shape._onRemoveParent();
 
     return this;
   }
 
   children() {
     return this.childrenOrder.map(id => this._children.get(id)).filter(Boolean) as Shape[];
-  }
-
-  length() {
-    return this._children.size;
   }
 
   // Positioning
@@ -150,11 +149,21 @@ export abstract class Shape {
 
   // drawing
   // ---------------------------------------------------------------------------------------
-  draw(state: State): void {
+  private _draw(state: State): void {
     if (!this.style.visible)
       return;
 
     for (const child of this.children())
       child.draw(state);
+
+    this.draw(state);
+  }
+
+  abstract draw(state: State): void;
+
+  // static
+  // -------------------------------------------------------------------------------------
+  static draw(shape: Shape, state: State) {
+    shape._draw(state);
   }
 }
