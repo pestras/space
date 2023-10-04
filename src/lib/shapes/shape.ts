@@ -11,7 +11,6 @@ export interface ShapeState {
 
 export interface ShapeStyle {
   visible?: boolean;
-  fill?: string;
 }
 
 export abstract class Shape {

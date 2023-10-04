@@ -165,10 +165,10 @@ export class Space {
           }
         }
 
-        if (hoverOnShape) {
-          if (this.state.hovered && this.state.hovered !== hoverOnShape)
-            this.state.hovered.listeners.mouseout && this.state.hovered.listeners.mouseout(this.state);
+        if (this.state.hovered && this.state.hovered !== hoverOnShape)
+          this.state.hovered.listeners.mouseout && this.state.hovered.listeners.mouseout(this.state);
 
+        if (hoverOnShape) {
           if (this.state.hovered !== hoverOnShape) {
             this.state.hovered = hoverOnShape;
             hoverOnShape.listeners.mousein && hoverOnShape.listeners.mousein(this.state);
