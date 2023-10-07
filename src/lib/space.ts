@@ -1,6 +1,6 @@
 import { drawGrid } from "./grid";
 import { Point } from "./point";
-import { Shape } from "./shapes/shape";
+import { Shape } from "./basic-shapes/shape";
 import { Size } from "./size";
 import { State } from "./state";
 import { SpaceTheme, defaultSpaceTheme } from "./theme";
@@ -155,7 +155,7 @@ export class Space {
         const shapes = this.shapes();
 
         for (let i = shapes.length - 1; i >= 0; i--) {
-          hoverOnShape = Shape.isPointIn(shapes[i], this.state.mouseViewPos);
+          hoverOnShape = Shape.isPointIn(shapes[i], this.state.mouseViewPos, this.state);
 
           if (hoverOnShape) {
             if (hoverOnShape === this.state.dragged)

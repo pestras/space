@@ -2,7 +2,7 @@ import { Listeners } from "../listener";
 import { Point } from "../point";
 import { State } from "../state";
 import { spaceId } from "../util/id";
-import { features } from "./features";
+import { features } from "../features";
 
 export interface ShapeState {
   acceptChildren?: string[];
@@ -17,8 +17,9 @@ export abstract class Shape {
   readonly id = spaceId();
   readonly listeners: Listeners = {};
   readonly state: ShapeState = {};
-  readonly style: ShapeStyle = { visible: true };
   readonly locals: Record<string, any> = {};
+
+  protected readonly _style: ShapeStyle = { visible: true };
 
   private _draggable = false;
   private _arrowControl = false;
@@ -123,20 +124,20 @@ export abstract class Shape {
 
   // events
   // ---------------------------------------------------------------------------------------
-  private _isPointIn(point: Point): Shape | null {
+  private _isPointIn(point: Point, state: State): Shape | null {
     const children = this.children();
 
     for (let i = children.length - 1; i >= 0; i--) {
-      const shape = children[i].isPointIn(point)
+      const shape = children[i].isPointIn(point, state)
 
       if (shape)
         return shape;
     }
 
-    return this.isPointIn(point);
+    return this.isPointIn(point, state);
   }
 
-  abstract isPointIn(point: Point): Shape | null;
+  abstract isPointIn(point: Point, state: State): Shape | null;
 
   on<T extends keyof Listeners>(event: T, cb: Listeners[T]) {
     this.listeners[event] = cb;
@@ -180,7 +181,7 @@ export abstract class Shape {
   // drawing
   // ---------------------------------------------------------------------------------------
   private _draw(state: State): void {
-    if (!this.style.visible)
+    if (!this._style.visible)
       return;
 
     for (const child of this.children())
@@ -197,7 +198,7 @@ export abstract class Shape {
     shape._draw(state);
   }
 
-  static isPointIn(shape: Shape, point: Point) {
-    return shape._isPointIn(point);
+  static isPointIn(shape: Shape, point: Point, state: State) {
+    return shape._isPointIn(point, state);
   }
 }

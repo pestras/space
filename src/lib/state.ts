@@ -1,5 +1,5 @@
 import { Point } from "./point";
-import { Shape } from "./shapes/shape";
+import { Shape } from "./basic-shapes/shape";
 import { Size } from "./size";
 import { SpaceTheme } from "./theme";
 

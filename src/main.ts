@@ -1,7 +1,7 @@
 import { Point } from './lib/point';
-import { Circle } from './lib/shapes/circle';
-import { Rect } from './lib/shapes/rect';
-import { Text } from './lib/shapes/text';
+import { Circle } from './lib/basic-shapes/circle';
+import { Rect } from './lib/basic-shapes/rect';
+import { Text } from './lib/basic-shapes/text';
 import { Size } from './lib/size';
 import { Space } from './lib/space';
 
@@ -19,7 +19,7 @@ rect.on('click', () => {
 });
 
 rect.on('select', () => {
-  rect.setStyle({
+  rect.style({
     strokeStyle: '#446',
     lineWidth: 6,
     opacity: 0.5
@@ -27,7 +27,7 @@ rect.on('select', () => {
 });
 
 rect.on('deselect', state => {
-  rect.setStyle({
+  rect.style({
     strokeStyle: state.style.strokeStyle,
     lineWidth: state.style.lineWidth,
     opacity: 1
@@ -44,7 +44,7 @@ const circle = new Circle(new Point(-200, -50), 100);
 circle.draggable = true;
 circle.arrowControl = true;
 circle.on('click', () => {
-  circle.style.fill = '#5B8';
+  circle.style({ fill: '#5B8' });
   return true;
 });
 
@@ -57,13 +57,15 @@ const text = new Text(new Point(30, 30), new Size(242, -1), "Lorem ipsum dolor s
 
 text.setStyle({ fontSize: 24 });
 text.on('mousein', () => {
-  text.style.fontColor = '#FFF'
+  text.style({ fontColor: '#FFF' });
 });
 text.on('mouseout', state => {
-  text.style.fontColor = state.style.fontColor;
+  text.style({ fontColor: state.style.fontColor });
 });
 
 space.addShape(text);
 
 
+// draw
+// ----------------------------------------------------------------------------
 space.draw();

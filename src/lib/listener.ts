@@ -1,4 +1,4 @@
-import { Shape } from "./shapes/shape";
+import { Shape } from "./basic-shapes/shape";
 import { State } from "./state";
 
 export interface KeyHold {

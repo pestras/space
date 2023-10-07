@@ -1,5 +1,5 @@
-import { Point } from "../../point";
-import { Shape } from "../shape";
+import { Point } from "../point";
+import { Shape } from "../basic-shapes/shape";
 
 export const arrowControl = {
   enable(shape: Shape) {

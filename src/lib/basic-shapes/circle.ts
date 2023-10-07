@@ -12,10 +12,6 @@ export interface CircleStyle extends ShapeStyle {
 
 export class Circle extends Shape {
 
-  style: CircleStyle = { 
-    visible: true
-  };
-
   constructor(
     pos = new Point(),
     protected _radius: number
@@ -25,30 +21,39 @@ export class Circle extends Shape {
     this.setPos(new Point(pos.x - this._radius, pos.y - this._radius));
   }
 
-  radius() {
-    return this._radius;
+  // style
+  // --------------------------------------------------------------------------
+  protected readonly _style: CircleStyle = { 
+    visible: true
+  };
+
+  style(): CircleStyle
+  style(options: CircleStyle): void
+  style(options?: CircleStyle) {
+    if (options)
+      Object.assign(this._style, options);
+    else
+      return Object.assign({}, this._style);
   }
 
-  setStyle(style: Partial<CircleStyle>) {
-    Object.assign(this.style, style);
-
-    return this;
+  radius() {
+    return this._radius;
   }
 
   draw(state: State): void {
     state.ctx.beginPath();
 
-    state.ctx.globalAlpha = this.style.opacity ?? state.style.opacity;
+    state.ctx.globalAlpha = this._style.opacity ?? state.style.opacity;
     state.ctx.arc(this.vPos().x, this.vPos().y, this._radius, 0, 2 * Math.PI);
 
-    if (this.style.fill !== 'none') {
-      state.ctx.fillStyle = this.style.fill ?? state.style.fill;
+    if (this._style.fill !== 'none') {
+      state.ctx.fillStyle = this._style.fill ?? state.style.fill;
       state.ctx.fill();
     }
 
-    if (this.style.lineWidth !== 0 && this.style.strokeStyle !== 'none') {
-      state.ctx.strokeStyle = this.style.strokeStyle ?? state.style.strokeStyle;
-      state.ctx.lineWidth = this.style.lineWidth ?? state.style.lineWidth;
+    if (this._style.lineWidth !== 0 && this._style.strokeStyle !== 'none') {
+      state.ctx.strokeStyle = this._style.strokeStyle ?? state.style.strokeStyle;
+      state.ctx.lineWidth = this._style.lineWidth ?? state.style.lineWidth;
       state.ctx.stroke();
     }
   }

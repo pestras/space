@@ -19,14 +19,25 @@ export class Text extends Shape {
   private lineHeight = 16;
   private textWidth = 0;
 
-  readonly style: TextStyle = {
-    visible: true
-  };
-
   constructor(pos = new Point(), protected _size: Size, protected _text: string) {
     super();
 
     this.setPos(pos);
+  }
+
+  // style
+  // -------------------------------------------------------------------------------
+  protected readonly _style: TextStyle = {
+    visible: true
+  };
+
+  style(): TextStyle
+  style(options: TextStyle): void
+  style(options?: TextStyle) {
+    if (options)
+      Object.assign(this._style, options);
+    else
+      return Object.assign({}, this._style);
   }
 
   height() {
@@ -47,7 +58,7 @@ export class Text extends Shape {
   }
 
   setStyle(style: TextStyle) {
-    Object.assign(this.style, style);
+    Object.assign(this._style, style);
 
     return this;
   }
@@ -102,27 +113,27 @@ export class Text extends Shape {
   }
 
   draw(state: State): void {
-    const fontSize = this.style.fontSize ?? state.style.fontSize
+    const fontSize = this._style.fontSize ?? state.style.fontSize
     this.lineHeight = fontSize;
 
     this.measure(state.ctx, fontSize);
 
-    state.ctx.globalAlpha = this.style.opacity ?? state.style.opacity;
-    state.ctx.font = `${fontSize}px ${this.style.fontFamily ?? state.style.fontFamily}`;
+    state.ctx.globalAlpha = this._style.opacity ?? state.style.opacity;
+    state.ctx.font = `${fontSize}px ${this._style.fontFamily ?? state.style.fontFamily}`;
     state.ctx.textBaseline = 'top';
 
-    if (this.style.fontColor !== 'none') {
-      state.ctx.fillStyle = this.style.fontColor ?? state.style.fontColor;
+    if (this._style.fontColor !== 'none') {
+      state.ctx.fillStyle = this._style.fontColor ?? state.style.fontColor;
 
       for (let i = 0; i < this.parts.length; i++)
         state.ctx.fillText(this.parts[i], this.vPos().x, this.vPos().y + (i * this.lineHeight));
     }
 
-    if (this.style.fontLineWidth && this.style.fontStrokeStyle) {
-      state.ctx.strokeStyle = this.style.fontStrokeStyle;
-      state.ctx.lineWidth = this.style.fontLineWidth;
-      state.ctx.lineJoin = this.style.fontLineJoin ?? state.style.fontLineJoin;
-      state.ctx.lineCap = this.style.fontLineCap ?? state.style.fontLineCap;
+    if (this._style.fontLineWidth && this._style.fontStrokeStyle) {
+      state.ctx.strokeStyle = this._style.fontStrokeStyle;
+      state.ctx.lineWidth = this._style.fontLineWidth;
+      state.ctx.lineJoin = this._style.fontLineJoin ?? state.style.fontLineJoin;
+      state.ctx.lineCap = this._style.fontLineCap ?? state.style.fontLineCap;
 
       for (let i = 0; i < this.parts.length; i++)
         state.ctx.strokeText(this.parts[i], this.vPos().x, this.vPos().y + (i * this.lineHeight));
